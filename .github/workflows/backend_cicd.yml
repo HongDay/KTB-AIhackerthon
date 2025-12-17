@@ -23,7 +23,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Genrate .env
+      - name: Genrate .application-prod.yml
         run: |
           cat > be/src/main/resources/application-prod.yml << EOF
           spring:
@@ -69,7 +69,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/AIHKT-be:latest -f be/Dockerfile be/
-          docker push ${{ secrets.DOCKER_USERNAME }}/AIHKT-be:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
 
   deploy:
     needs: image-build-push
@@ -87,7 +87,7 @@ jobs:
       - name: Deploy to EC2 via docker image
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
-            docker pull ${{ secrets.DOCKER_USERNAME }}/AIHKT-be:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
             docker stop aihkt-be || true
             docker rm aihkt-be || true
             docker run -d --name aihkt-be -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/AIHKT-be:latest
