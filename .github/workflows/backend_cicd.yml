@@ -68,7 +68,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/AIHKT-be:latest -f be/Dockerfile be/
+          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest -f be/Dockerfile be/
           docker push ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
 
   deploy:
@@ -90,5 +90,5 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
             docker stop aihkt-be || true
             docker rm aihkt-be || true
-            docker run -d --name aihkt-be -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/AIHKT-be:latest
+            docker run -d --name aihkt-be -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
           EOF
