@@ -7,9 +7,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-# Use npm install instead of npm ci to handle peer dependency issues
-# npm ci requires exact sync between package.json and package-lock.json
-RUN npm install --legacy-peer-deps
+# Use npm install with legacy-peer-deps to handle peer dependency issues
+# This is more flexible than npm ci which requires exact sync
+RUN npm install --legacy-peer-deps --no-audit
 
 # Copy source code
 COPY . .
