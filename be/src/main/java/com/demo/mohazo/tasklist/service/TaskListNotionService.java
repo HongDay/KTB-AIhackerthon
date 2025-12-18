@@ -47,7 +47,8 @@ public class TaskListNotionService {
                                 "options", List.of(
                                         Map.of("name", Status.BEFORE.name(), "color", "default"),
                                         Map.of("name", Status.DOING.name(), "color", "blue"),
-                                        Map.of("name", Status.DONE.name(), "color", "green"))))));
+                                        Map.of("name", Status.DONE.name(), "color", "green"),
+                                        Map.of("name", Status.CLASSIFIED.name(), "color", "yellow"))))));
 
         return webClient.post().uri("/databases")
                 .header("Authorization", "Bearer " + NOTION_TOKEN)
@@ -64,7 +65,6 @@ public class TaskListNotionService {
         Map<String, Object> props = new HashMap<>();
         props.put("업무 명칭", Map.of("title", List.of(Map.of("text", Map.of("content", data.getDescription())))));
         props.put("담당자", Map.of("rich_text", List.of(Map.of("text", Map.of("content", data.getAssignee())))));
-//        props.put("마감일", Map.of("date", Map.of("start", data.getDeadline())));
         props.put("상태", Map.of("select", Map.of("name", data.getStatus().name())));
 
         return webClient.post().uri("/pages")

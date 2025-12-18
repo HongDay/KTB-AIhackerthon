@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 public class TaskBoardController {
 
     public final TaskListNotionService taskListNotionService;
-    public final WorksService worksService;
-    public final MohajoAlgorithm mohajoAlgorithm;
     public final MeetingRepository meetingRepository;
     public final TeamRepository teamRepository;
 
