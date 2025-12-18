@@ -1,6 +1,7 @@
 package com.demo.mohazo.meeting.service;
 
 import com.demo.mohazo.common.dto.ApiResponse;
+import com.demo.mohazo.meeting.dto.meetingListResponseDTO;
 import com.demo.mohazo.meeting.dto.meetingUploadRequestDTO;
 import com.demo.mohazo.meeting.dto.meetingUploadResponseDTO;
 import com.demo.mohazo.meeting.entity.Meeting;
@@ -12,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,5 +50,16 @@ public class MeetingService {
         // meeting.updateNotionPageUrlDesc(notionPageUrlDesc);
 
         return new meetingUploadResponseDTO(meetingid);
+    }
+
+    @Transactional
+    public meetingListResponseDTO getMeetingList() {
+        List<Meeting> meetings = meetingRepository.findAll();
+        List<meetingListResponseDTO.meetingList> list = meetings.stream()
+                .map(item ->
+                    new meetingListResponseDTO.meetingList(item.getId(), item.getTitle())
+                ).toList();
+
+        return new meetingListResponseDTO(list);
     }
 }
