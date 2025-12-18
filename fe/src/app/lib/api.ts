@@ -72,8 +72,7 @@ export async function uploadMeeting(
  * 회의 목록 조회
  */
 export async function getMeetingList(): Promise<MeetingListItem[]> {
-  const API_BASE_URL = getApiBaseUrl();
-  const response = await fetch(`${API_BASE_URL}/api/meeting`, {
+  const response = await fetch(`/api/meeting`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -98,8 +97,7 @@ export async function getMeetingList(): Promise<MeetingListItem[]> {
  * 회의 설명 조회
  */
 export async function getMeetingDescription(meetingid: number): Promise<string> {
-  const API_BASE_URL = getApiBaseUrl();
-  const response = await fetch(`${API_BASE_URL}/api/description/${meetingid}`, {
+  const response = await fetch(`/api/description/${meetingid}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
