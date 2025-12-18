@@ -34,4 +34,7 @@ public class Meeting {
     @Column(name="notion_database_id", length = 1000)
     private String notionDatabaseId;
 
+    public void updateNotionPageUrlDesc(String value) {
+        this.notionPageUrlDesc = value;
+    }
 }

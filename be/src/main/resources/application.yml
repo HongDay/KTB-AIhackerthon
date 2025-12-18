@@ -12,3 +12,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
+
+fastapi:
+  base-url: http://54.180.236.70:8000
