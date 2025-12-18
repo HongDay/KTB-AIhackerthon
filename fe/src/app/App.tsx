@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Sidebar, type PageType } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { HomePage } from './components/HomePage';
@@ -28,6 +28,7 @@ export default function App() {
   const [tasks, setTasks] = useState(mockTasks);
   const [works, setWorks] = useState(mockWorks);
   const [isLoadingMeetings, setIsLoadingMeetings] = useState(false);
+  const isFetchingRef = useRef(false);
 
   // 미배정 Work 계산
   const unassignedWorks = works.filter((w) => !w.assigneeId);
@@ -36,8 +37,14 @@ export default function App() {
   // 실패 건수 (동기화 실패)
   const failedCount = mockSyncRuns.filter((r) => r.result === 'failed').length;
 
-  // 회의록 목록 조회
-  const fetchMeetingList = async () => {
+  // 회의록 목록 조회 (중복 호출 방지)
+  const fetchMeetingList = useCallback(async () => {
+    // 이미 호출 중이면 중복 호출 방지
+    if (isFetchingRef.current) {
+      return;
+    }
+
+    isFetchingRef.current = true;
     setIsLoadingMeetings(true);
     try {
       const meetings = await getMeetingList();
@@ -59,13 +66,14 @@ export default function App() {
       });
     } finally {
       setIsLoadingMeetings(false);
+      isFetchingRef.current = false;
     }
-  };
+  }, []);
 
   // 컴포넌트 마운트 시 회의록 목록 조회
   useEffect(() => {
     fetchMeetingList();
-  }, []);
+  }, [fetchMeetingList]);
 
   // 회의록 업로드 핸들러
   const handleUpload = () => {
