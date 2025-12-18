@@ -43,8 +43,7 @@ export async function uploadMeeting(
   title: string,
   record: string
 ): Promise<UploadMeetingResponse> {
-  const API_BASE_URL = getApiBaseUrl();
-  const response = await fetch(`${API_BASE_URL}/api/meetings`, {
+  const response = await fetch(`/api/meetings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
