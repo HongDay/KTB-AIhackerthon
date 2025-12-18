@@ -2,6 +2,7 @@ package com.demo.mohazo.meeting.service;
 
 import com.demo.mohazo.common.dto.ApiResponse;
 import com.demo.mohazo.meeting.dto.meetingListResponseDTO;
+import com.demo.mohazo.meeting.dto.meetingScriptResponseDTO;
 import com.demo.mohazo.meeting.dto.meetingUploadRequestDTO;
 import com.demo.mohazo.meeting.dto.meetingUploadResponseDTO;
 import com.demo.mohazo.meeting.entity.Meeting;
@@ -61,5 +62,13 @@ public class MeetingService {
                 ).toList();
 
         return new meetingListResponseDTO(list);
+    }
+
+    @Transactional
+    public meetingScriptResponseDTO getMeetingScript(Long meetingId) {
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new EntityNotFoundException("invalid meeting id"));
+
+        return new meetingScriptResponseDTO(meeting.getScript());
     }
 }
