@@ -45,7 +45,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
             docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-ai:latest
 
-            cat > /opt/ai-fastapi.env << 'EOF'
+            sudo tee /opt/ai-fastapi.env > /dev/null << 'EOF'
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
             DATABASE_URL=${{ secrets.AI_DB_URL }}
             EOF
