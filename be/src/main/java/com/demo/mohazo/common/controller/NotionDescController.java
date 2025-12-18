@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/notion")
+@RequestMapping("/notion")
 @RequiredArgsConstructor
 public class NotionDescController {
     private final NotionDescService notionDescService;

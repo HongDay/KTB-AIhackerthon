@@ -1,8 +1,11 @@
 package com.demo.mohazo.common.service;
 
+import com.demo.mohazo.common.entity.Team;
+import com.demo.mohazo.common.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.JsonNode;
 
 import java.util.*;
 
@@ -10,6 +13,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class NotionService {
     private final WebClient webClient;
+    private final TeamRepository teamRepository;
 
     public void updatePageWithTitleAndMarkdown(String notionPageUrlDesc, String pageTitle, String markdownContent, String notionSecretKey) {
         updatePageTitle(notionPageUrlDesc, pageTitle, notionSecretKey);
@@ -31,39 +35,39 @@ public class NotionService {
     }
 
     public void addMarkdownContentToPage(String notionPageUrlDesc, String markdownContent, String notionSecretKey) {
-    // \n (백슬래시 + n)을 실제 줄바꿈 문자로 변환
-    String normalizedContent = markdownContent.replace("\\n", "\n");
-    
-    String[] lines = normalizedContent.split("\n");
-    List<Map<String, Object>> children = new ArrayList<>();
-    
-    for (String line : lines) {
-        if (line.trim().isEmpty()) {
-            children.add(createParagraphBlock(""));
-            continue;
+        // \n (백슬래시 + n)을 실제 줄바꿈 문자로 변환
+        String normalizedContent = markdownContent.replace("\\n", "\n");
+
+        String[] lines = normalizedContent.split("\n");
+        List<Map<String, Object>> children = new ArrayList<>();
+
+        for (String line : lines) {
+            if (line.trim().isEmpty()) {
+                children.add(createParagraphBlock(""));
+                continue;
+            }
+
+            Map<String, Object> block = parseMarkdownLine(line);
+            if (block != null) {
+                children.add(block);
+            }
         }
-        
-        Map<String, Object> block = parseMarkdownLine(line);
-        if (block != null) {
-            children.add(block);
+
+        int batchSize = 100;
+        for (int i = 0; i < children.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, children.size());
+            List<Map<String, Object>> batch = children.subList(i, end);
+
+            webClient.patch()
+                .uri("/blocks/" + notionPageUrlDesc + "/children")
+                .header("Authorization", "Bearer " + notionSecretKey)
+                .header("Notion-Version", "2022-06-28")
+                .bodyValue(Map.of("children", batch))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
         }
     }
-    
-    int batchSize = 100;
-    for (int i = 0; i < children.size(); i += batchSize) {
-        int end = Math.min(i + batchSize, children.size());
-        List<Map<String, Object>> batch = children.subList(i, end);
-        
-        webClient.patch()
-            .uri("/blocks/" + notionPageUrlDesc + "/children")
-            .header("Authorization", "Bearer " + notionSecretKey)
-            .header("Notion-Version", "2022-06-28")
-            .bodyValue(Map.of("children", batch))
-            .retrieve()
-            .bodyToMono(Map.class)
-            .block();
-    }
-}
 
     private Map<String, Object> parseMarkdownLine(String line) {
         String trimmed = line.trim();
@@ -176,5 +180,30 @@ public class NotionService {
         }
         
         return richText;
+    }
+
+    public String createNewPage() {
+        Team team = teamRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+
+        String parent_page_id = team.getNotionPageUrlBase();
+        String notion_token = team.getNotionKey();
+
+        Map<String, Object> body = Map.of(
+                "parent", Map.of("page_id", parent_page_id),
+                "properties", Map.of(
+                        "title", List.of(Map.of("text", Map.of("content", " ")))
+                )
+        );
+
+        return webClient.post()
+                .uri("/pages")
+                .header("Authorization", "Bearer " + notion_token)
+                .header("Notion-Version", "2022-06-28")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .map(node -> node.get("id").asText())
+                .block();
     }
 }

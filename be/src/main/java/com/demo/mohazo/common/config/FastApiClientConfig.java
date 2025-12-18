@@ -15,6 +15,7 @@ public class FastApiClientConfig {
     @Bean
     RestClient fastApiRestClient(@Value("${fastapi.base-url}") String baseUrl) {
         HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(10)) // 연결 타임아웃
                 .build();
 

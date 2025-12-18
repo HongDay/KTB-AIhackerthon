@@ -25,15 +25,15 @@ public class MeetingController extends ApiController {
 
     @PostMapping("meetings")
     public ResponseEntity<ApiResponse<meetingUploadResponseDTO>> uploadMeeting(
-            @RequestBody @Valid meetingUploadRequestDTO req
+            @RequestBody @Valid meetingUploadRequestDTO.beRequest req
     ){
         meetingUploadResponseDTO response = meetingService.uploadMeeting(req);
         return ResponseEntity.ok(new ApiResponse<>("meeting record uploaded", response));
     }
 
     @GetMapping("meetings")
-    public ResponseEntity<ApiResponse<meetingListResponseDTO>> getMeetingList() {
-        meetingListResponseDTO response = meetingService.getMeetingList();
+    public ResponseEntity<ApiResponse<meetingListResponseDTO.meetingList>> getMeetingList() {
+        meetingListResponseDTO.meetingList response = meetingService.getMeetingList();
 
         return ResponseEntity.ok(new ApiResponse<>("meeting list successfully responded", response));
     }

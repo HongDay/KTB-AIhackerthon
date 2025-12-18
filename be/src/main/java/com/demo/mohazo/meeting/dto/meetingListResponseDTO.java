@@ -4,13 +4,7 @@ import lombok.*;
 
 import java.util.List;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class meetingListResponseDTO {
-    private List<meetingList> list;
 
     @Builder
     @AllArgsConstructor
@@ -18,6 +12,15 @@ public class meetingListResponseDTO {
     @Getter
     @Setter
     public static class meetingList {
+        private List<meetingSimple> list;
+    }
+
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class meetingSimple {
         private Long meetingid;
         private String title;
     }
