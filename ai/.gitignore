@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment Variables
+.env
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
+uvicorn.log
+
+# IDE settings
+.vscode/
+.idea/
