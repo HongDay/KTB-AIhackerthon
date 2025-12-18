@@ -25,12 +25,10 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/notion/.task")
+@RequestMapping("/api/notion/task")
 public class TaskBoardController {
 
     public final TaskListNotionService taskListNotionService;
-    public final WorksService worksService;
-    public final MohajoAlgorithm mohajoAlgorithm;
     public final MeetingRepository meetingRepository;
     public final TeamRepository teamRepository;
 
@@ -58,22 +56,11 @@ public class TaskBoardController {
         //TaskListService.createTable -> notion_database_id in meeting
         taskListNotionService.createNotionDB(team, meeting);
 
-
-
-
         //TaskListService.insertPages 안에서 TaskList에  notion_task_id 할당
         taskListNotionService.insertPages(tasks, meeting, team);
 
 
-
-
-
-
-
-
-
-
-        return ResponseEntity.ok().body(new ApiResponse("task list successfully exported to notion", null));
+        return ResponseEntity.ok().body(new ApiResponse<>("task list successfully exported to notion", null));
 
     }
 
