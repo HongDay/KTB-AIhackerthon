@@ -14,6 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
+
+import java.util.List;
+import java.util.Map;
 
 import java.util.List;
 
@@ -44,6 +48,25 @@ public class MeetingService {
 
         // Notion page 생성 API 호출 (daisy part)
         // String notionPageUrlDesc = ;
+        // PARENT_PAGE_ID를 DB에서 가져와야합니다.
+        private String createNewPage() {
+            Map<String, Object> body = Map.of(
+                    "parent", Map.of("page_id", PARENT_PAGE_ID),
+                    "properties", Map.of(
+                            "title", List.of(Map.of("text", Map.of("content", " ")))
+                    )
+            );
+
+            return webClient.post()
+                    .uri("/pages")
+                    .header("Authorization", "Bearer " + NOTION_TOKEN)
+                    .header("Notion-Version", "2022-06-28")
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .map(node -> node.get("id").asText())
+                    .block();
+        }
 
         // DB에 'notion_page_url_desc' 필드 채우기
         Meeting meeting = meetingRepository.findById(meetingid)
