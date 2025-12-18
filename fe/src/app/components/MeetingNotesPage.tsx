@@ -6,7 +6,8 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Search, Upload, Check, Clock, TriangleAlert } from 'lucide-react';
+import { Progress } from './ui/progress';
+import { Search, Upload, Check, Clock, TriangleAlert, Loader2 } from 'lucide-react';
 import type { MeetingNote } from '../types';
 
 interface MeetingNotesPageProps {
@@ -21,6 +22,8 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStage, setUploadStage] = useState('');
 
   const getStatusConfig = (status: MeetingNote['status']) => {
     const configs = {
@@ -41,14 +44,41 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
   const handleUpload = async () => {
     if (newTitle.trim() && newContent.trim() && !isUploading) {
       setIsUploading(true);
+      setUploadProgress(0);
+      setUploadStage('업로드 중...');
+
       try {
+        // 프로그레스 시뮬레이션
+        const stages = [
+          { progress: 20, stage: '회의록 업로드 중...' },
+          { progress: 40, stage: 'AI 분석 중...' },
+          { progress: 60, stage: '설명 생성 중...' },
+          { progress: 80, stage: '태스크 추출 중...' },
+          { progress: 95, stage: 'Notion 동기화 중...' },
+        ];
+
+        for (const { progress, stage } of stages) {
+          setUploadProgress(progress);
+          setUploadStage(stage);
+          await new Promise(resolve => setTimeout(resolve, 600));
+        }
+
         await onUpload(newTitle, newContent);
+        
+        setUploadProgress(100);
+        setUploadStage('완료!');
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // 상태 초기화 및 다이얼로그 닫기
         setNewTitle('');
         setNewContent('');
+        setUploadProgress(0);
+        setUploadStage('');
         setIsUploadOpen(false);
       } catch (error) {
-        // 에러는 App.tsx에서 toast로 표시됨
         console.error('Upload error:', error);
+        setUploadProgress(0);
+        setUploadStage('');
       } finally {
         setIsUploading(false);
       }
@@ -87,6 +117,7 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
                   placeholder="예: 2024 Q4 프로젝트 킥오프"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
+                  disabled={isUploading}
                 />
               </div>
               <div className="space-y-2">
@@ -96,12 +127,31 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
                   className="min-h-[300px]"
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
+                  disabled={isUploading}
                 />
               </div>
+
+              {/* 프로그레스 바 */}
+              {isUploading && (
+                <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{uploadStage}</span>
+                    <span className="text-muted-foreground">{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="h-2" />
+                </div>
+              )}
+
               <div className="flex justify-end gap-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => setIsUploadOpen(false)}
+                  onClick={() => {
+                    if (!isUploading) {
+                      setIsUploadOpen(false);
+                      setUploadProgress(0);
+                      setUploadStage('');
+                    }
+                  }}
                   disabled={isUploading}
                 >
                   취소
@@ -110,7 +160,14 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
                   onClick={handleUpload} 
                   disabled={!newTitle.trim() || !newContent.trim() || isUploading}
                 >
-                  {isUploading ? '업로드 중...' : '업로드 및 분석 시작'}
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="size-4 mr-2 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : (
+                    '업로드 및 분석 시작'
+                  )}
                 </Button>
               </div>
             </div>
