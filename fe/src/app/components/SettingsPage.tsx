@@ -23,6 +23,9 @@ interface SettingsPageProps {
 export function SettingsPage({ members, onAddMember }: SettingsPageProps) {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<Member['role']>('frontend');
+  const [basePageUrl, setBasePageUrl] = useState('');
+  const [notionSecret, setNotionSecret] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
 
   const getCategoryLabel = (category: Member['role']) => {
     const labels = {
@@ -47,6 +50,21 @@ export function SettingsPage({ members, onAddMember }: SettingsPageProps) {
       });
       setNewMemberName('');
       setNewMemberRole('frontend');
+    }
+  };
+
+  const isValidUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'https:' || urlObj.protocol === 'http:';
+    } catch {
+      return false;
+    }
+  };
+
+  const handleConnect = () => {
+    if (isValidUrl(basePageUrl)) {
+      setIsConnected(true);
     }
   };
 
@@ -167,24 +185,55 @@ export function SettingsPage({ members, onAddMember }: SettingsPageProps) {
                 <div>
                   <p className="font-medium">연결 상태</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    워크스페이스: 우리 팀 프로젝트
+                    {isConnected ? 'Notion과 연결되어 있습니다' : 'Notion과 연결되지 않았습니다'}
                   </p>
                 </div>
-                <Badge variant="default" className="gap-1.5">
-                  <Check className="size-3.5" />
-                  연결됨
-                </Badge>
+                {isConnected ? (
+                  <Badge variant="default" className="gap-1.5">
+                    <Check className="size-3.5" />
+                    연결됨
+                  </Badge>
+                ) : (
+                  <Badge variant="outline">연결 안됨</Badge>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">API Token</label>
-                <div className="flex gap-2">
-                  <Input type="password" value="ntn_••••••••••••••••" disabled />
-                  <Button variant="outline">재연결</Button>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Base Page URL</label>
+                  <Input
+                    type="url"
+                    placeholder="https://www.notion.so/..."
+                    value={basePageUrl}
+                    onChange={(e) => setBasePageUrl(e.target.value)}
+                    disabled={isConnected}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Notion 페이지의 URL을 입력하세요
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  토큰이 만료되었거나 권한 문제가 있는 경우 재연결하세요
-                </p>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">NOTION Secret</label>
+                  <Input
+                    type="password"
+                    placeholder="secret_..."
+                    value={notionSecret}
+                    onChange={(e) => setNotionSecret(e.target.value)}
+                    disabled={isConnected}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Notion Integration의 Secret을 입력하세요
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleConnect}
+                  disabled={!basePageUrl.trim() || !notionSecret.trim() || isConnected}
+                  className="w-full"
+                >
+                  {isConnected ? '연결됨' : '연결'}
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar, type PageType } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { HomePage } from './components/HomePage';
@@ -10,7 +10,6 @@ import { WorkAssignmentPage } from './components/WorkAssignmentPage';
 import { SettingsPage } from './components/SettingsPage';
 import {
   mockMembers,
-  mockMeetingNotes,
   mockTasks,
   mockWorks,
   mockSyncRuns,
@@ -18,15 +17,17 @@ import {
   mockPipelineSteps,
   mockExplanationScripts,
 } from './lib/mock-data';
+import { uploadMeeting, getMeetingList, getMeetingDescription } from './lib/api';
 import type { MeetingNote, Task, Work } from './types';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
-  const [meetingNotes, setMeetingNotes] = useState(mockMeetingNotes);
+  const [meetingNotes, setMeetingNotes] = useState<MeetingNote[]>([]);
   const [tasks, setTasks] = useState(mockTasks);
   const [works, setWorks] = useState(mockWorks);
+  const [isLoadingMeetings, setIsLoadingMeetings] = useState(false);
 
   // 미배정 Work 계산
   const unassignedWorks = works.filter((w) => !w.assigneeId);
@@ -34,6 +35,37 @@ export default function App() {
 
   // 실패 건수 (동기화 실패)
   const failedCount = mockSyncRuns.filter((r) => r.result === 'failed').length;
+
+  // 회의록 목록 조회
+  const fetchMeetingList = async () => {
+    setIsLoadingMeetings(true);
+    try {
+      const meetings = await getMeetingList();
+      // API 응답을 MeetingNote 타입으로 변환
+      const notes: MeetingNote[] = meetings.map((meeting) => ({
+        id: String(meeting.meetingid),
+        title: meeting.title,
+        date: new Date().toISOString(), // API에서 날짜가 없으므로 현재 시간 사용
+        content: '', // API에서 content가 없음
+        uploadedBy: '', // API에서 없음
+        status: 'uploaded', // 기본값
+        version: 1,
+      }));
+      setMeetingNotes(notes);
+    } catch (error) {
+      console.error('회의록 목록 조회 실패:', error);
+      toast.error('회의록 목록 조회 실패', {
+        description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다',
+      });
+    } finally {
+      setIsLoadingMeetings(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 회의록 목록 조회
+  useEffect(() => {
+    fetchMeetingList();
+  }, []);
 
   // 회의록 업로드 핸들러
   const handleUpload = () => {
@@ -56,27 +88,60 @@ export default function App() {
   };
 
   // 새 회의록 생성
-  const handleCreateMeetingNote = (title: string, content: string) => {
-    const newNote: MeetingNote = {
-      id: String(meetingNotes.length + 1),
-      title,
-      content,
-      date: new Date().toISOString(),
-      uploadedBy: '김민준',
-      status: 'uploaded',
-      version: 1,
-    };
-    setMeetingNotes([newNote, ...meetingNotes]);
-    toast.success('회의록 업로드 완료', {
-      description: '분석이 시작되었습니다. 잠시만 기다려주세요.',
-    });
+  const handleCreateMeetingNote = async (title: string, content: string) => {
+    try {
+      toast.loading('회의록 업로드 중...', {
+        id: 'upload-meeting',
+      });
+
+      const response = await uploadMeeting(title, content);
+      
+      toast.success('회의록 업로드 완료', {
+        id: 'upload-meeting',
+        description: '분석이 시작되었습니다. 잠시만 기다려주세요.',
+      });
+
+      // 업로드 성공 후 목록 새로고침
+      await fetchMeetingList();
+    } catch (error) {
+      console.error('회의록 업로드 실패:', error);
+      toast.error('회의록 업로드 실패', {
+        id: 'upload-meeting',
+        description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다',
+      });
+    }
   };
 
   // 회의록 클릭
-  const handleNoteClick = (noteId: string) => {
-    toast.info('회의록 상세', {
-      description: '회의록 상세 페이지로 이동합니다',
-    });
+  const handleNoteClick = async (noteId: string) => {
+    try {
+      const meetingId = parseInt(noteId, 10);
+      if (isNaN(meetingId)) {
+        toast.error('잘못된 회의록 ID입니다');
+        return;
+      }
+
+      toast.loading('회의 설명을 불러오는 중...', {
+        id: 'load-description',
+      });
+
+      const script = await getMeetingDescription(meetingId);
+      
+      toast.success('회의 설명 로드 완료', {
+        id: 'load-description',
+        description: '회의 설명을 불러왔습니다',
+      });
+
+      // 설명 페이지로 이동하거나 설명을 표시하는 로직 추가 가능
+      // 현재는 토스트만 표시
+      console.log('Meeting description:', script);
+    } catch (error) {
+      console.error('회의 설명 조회 실패:', error);
+      toast.error('회의 설명 조회 실패', {
+        id: 'load-description',
+        description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다',
+      });
+    }
   };
 
   // 태스크 업데이트
