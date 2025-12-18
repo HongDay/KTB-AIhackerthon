@@ -1,0 +1,97 @@
+name: Spring Boot CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "be/**"
+      - ".github/workflows/backend_cicd.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Genrate .application-prod.yml
+        run: |
+          cat > be/src/main/resources/application-prod.yml << EOF
+          spring:
+            datasource:
+              url: ${{ secrets.DB_URL }}
+              username: ${{ secrets.DB_USER }}
+              password: ${{ secrets.DB_PASSWORD }}
+          EOF
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle
+        working-directory: be
+        run: SPRING_PROFILES_ACTIVE=prod ./gradlew bootJar --no-daemon
+
+      - name: Upload jar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: be/build/libs/*.jar
+
+  image-build-push:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download jar artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: be/build/libs/
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Verify jar exists
+        run: ls -al be/build/libs
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest -f be/Dockerfile be/
+          docker push ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
+
+  deploy:
+    needs: image-build-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Prepare SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2 via docker image
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
+            docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
+            docker stop aihkt-be || true
+            docker rm aihkt-be || true
+            docker run -d --name aihkt-be -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
+          EOF

@@ -1,41 +1,17 @@
 spring:
-  application:
-    name: be
-  # 웹훅 테스트를 위해 H2 인메모리 데이터베이스 사용 (로컬 테스트용)
-  # 프로덕션에서는 아래 주석을 해제하고 H2 설정을 제거하세요
-  # datasource:
-  #   url: jdbc:mysql://localhost:3306/mohazo?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-  #   username: root
-  #   password: password
-  #   driver-class-name: com.mysql.cj.jdbc.Driver
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
-  
+    url: jdbc:mysql://localhost:3306/mohajo?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=utf8
+    username: root
+    password: dayday
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: false
+      ddl-auto: update   # (예: validate / update / create / none)
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-  
-  h2:
-    console:
-      enabled: false
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
 
-server:
-  port: 8080
-
-# AI Server Configuration
-ai:
-  server:
-    url: http://localhost:8000  # AI 서버 URL (환경에 맞게 수정)
-
-# Notion Configuration
-notion:
-  api:
-    version: 2022-06-28
+fastapi:
+  base-url: http://54.180.236.70:8000
