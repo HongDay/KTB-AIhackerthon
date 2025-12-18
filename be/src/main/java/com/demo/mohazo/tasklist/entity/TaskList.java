@@ -30,7 +30,7 @@ public class TaskList {
     @JoinColumn(name="works_id", nullable = true)
     private Works works;
 
-    @Column(name="work_order", nullable = false)
+    @Column(name="task_order", nullable = false)
     private Integer taskOrder;
 
     @Enumerated(EnumType.STRING)
