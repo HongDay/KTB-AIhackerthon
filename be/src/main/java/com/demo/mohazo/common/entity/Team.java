@@ -23,4 +23,7 @@ public class Team {
     @Column(name="notion_key", nullable = false, length = 200)
     private String notionKey;
 
+    @Column(name="notion_page_url_base", length = 200)
+    private String notionPageUrlBase;
+
 }
