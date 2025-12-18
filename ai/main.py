@@ -26,7 +26,6 @@ app = FastAPI(title="Gemini Meeting Assistant")
 
 # 5. 요청 데이터 구조 정의
 class PromptRequest(BaseModel):
-    teamid: int
     title: str
     record: str  # record(회의록)
 
