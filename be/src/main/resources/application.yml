@@ -2,12 +2,13 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/mohajo?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=utf8
     username: root
-    password: dayday
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+
 
   jpa:
     hibernate:
-      ddl-auto: update   # (예: validate / update / create / none)
+      ddl-auto: update  # (예: validate / update / create / none)
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
