@@ -43,17 +43,17 @@ jobs:
       - name: Deploy to EC2 via docker image
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.AI_SERVER_HOST }} << 'SSH_EOF'
-            docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-ai:latest
+docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-ai:latest
 
-            sudo tee /opt/ai-fastapi.env > /dev/null << 'ENV_EOF'
-            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-            DATABASE_URL=${{ secrets.AI_DB_URL }}
-            ENV_EOF
+sudo tee /opt/ai-fastapi.env > /dev/null << 'ENV_EOF'
+GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+DATABASE_URL=${{ secrets.AI_DB_URL }}
+ENV_EOF
 
-            docker stop aihkt-ai || true
-            docker rm aihkt-ai || true
+docker stop aihkt-ai || true
+docker rm aihkt-ai || true
 
-            docker run -d --name aihkt-ai --env-file /opt/ai-fastapi.env \
-              -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/aihkt-ai:latest
+docker run -d --name aihkt-ai --env-file /opt/ai-fastapi.env \
+  -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/aihkt-ai:latest
 
-          SSH_EOF
+SSH_EOF
