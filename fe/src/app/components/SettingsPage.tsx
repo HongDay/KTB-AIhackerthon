@@ -20,12 +20,21 @@ interface SettingsPageProps {
   onAddMember: (member: Omit<Member, 'id'>) => void;
 }
 
+const API_BASE_URL_KEY = 'api_base_url';
+const NOTION_SECRET_KEY = 'notion_secret';
+
 export function SettingsPage({ members, onAddMember }: SettingsPageProps) {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<Member['role']>('frontend');
-  const [basePageUrl, setBasePageUrl] = useState('');
-  const [notionSecret, setNotionSecret] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
+  const [basePageUrl, setBasePageUrl] = useState(() => {
+    return localStorage.getItem(API_BASE_URL_KEY) || '';
+  });
+  const [notionSecret, setNotionSecret] = useState(() => {
+    return localStorage.getItem(NOTION_SECRET_KEY) || '';
+  });
+  const [isConnected, setIsConnected] = useState(() => {
+    return !!(localStorage.getItem(API_BASE_URL_KEY) && localStorage.getItem(NOTION_SECRET_KEY));
+  });
 
   const getCategoryLabel = (category: Member['role']) => {
     const labels = {
@@ -64,8 +73,19 @@ export function SettingsPage({ members, onAddMember }: SettingsPageProps) {
 
   const handleConnect = () => {
     if (isValidUrl(basePageUrl)) {
+      // localStorage에 저장
+      localStorage.setItem(API_BASE_URL_KEY, basePageUrl);
+      localStorage.setItem(NOTION_SECRET_KEY, notionSecret);
       setIsConnected(true);
     }
+  };
+
+  const handleDisconnect = () => {
+    localStorage.removeItem(API_BASE_URL_KEY);
+    localStorage.removeItem(NOTION_SECRET_KEY);
+    setIsConnected(false);
+    setBasePageUrl('');
+    setNotionSecret('');
   };
 
   return (
@@ -227,13 +247,23 @@ export function SettingsPage({ members, onAddMember }: SettingsPageProps) {
                   </p>
                 </div>
 
-                <Button
-                  onClick={handleConnect}
-                  disabled={!basePageUrl.trim() || !notionSecret.trim() || isConnected}
-                  className="w-full"
-                >
-                  {isConnected ? '연결됨' : '연결'}
-                </Button>
+                {isConnected ? (
+                  <Button
+                    onClick={handleDisconnect}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    연결 해제
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleConnect}
+                    disabled={!basePageUrl.trim() || !notionSecret.trim()}
+                    className="w-full"
+                  >
+                    연결
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -26,8 +26,15 @@ interface MeetingDescriptionResponse {
   script: string;
 }
 
-// API Base URL (환경변수에서 가져오거나 기본값 사용)
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080';
+// API Base URL을 localStorage에서 가져오는 함수
+function getApiBaseUrl(): string {
+  const storedUrl = localStorage.getItem('api_base_url');
+  if (storedUrl) {
+    return storedUrl;
+  }
+  // 값이 없으면 에러 던지기
+  throw new Error('API Base URL이 설정되지 않았습니다. 설정 페이지에서 Base Page URL을 입력해주세요.');
+}
 
 /**
  * 회의록 업로드
@@ -36,6 +43,7 @@ export async function uploadMeeting(
   title: string,
   record: string
 ): Promise<UploadMeetingResponse> {
+  const API_BASE_URL = getApiBaseUrl();
   const response = await fetch(`${API_BASE_URL}/api/meetings`, {
     method: 'POST',
     headers: {
@@ -65,6 +73,7 @@ export async function uploadMeeting(
  * 회의 목록 조회
  */
 export async function getMeetingList(): Promise<MeetingListItem[]> {
+  const API_BASE_URL = getApiBaseUrl();
   const response = await fetch(`${API_BASE_URL}/api/meeting`, {
     method: 'GET',
     headers: {
@@ -90,6 +99,7 @@ export async function getMeetingList(): Promise<MeetingListItem[]> {
  * 회의 설명 조회
  */
 export async function getMeetingDescription(meetingid: number): Promise<string> {
+  const API_BASE_URL = getApiBaseUrl();
   const response = await fetch(`${API_BASE_URL}/api/description/${meetingid}`, {
     method: 'GET',
     headers: {
