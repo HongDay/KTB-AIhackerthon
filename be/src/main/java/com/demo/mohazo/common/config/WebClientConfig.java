@@ -12,5 +12,6 @@ public class WebClientConfig {
         return WebClient.builder()
                 .baseUrl("https://api.notion.com/v1")
                 .build();
+
     }
 }
