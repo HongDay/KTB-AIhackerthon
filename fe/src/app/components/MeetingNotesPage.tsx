@@ -12,7 +12,7 @@ import type { MeetingNote } from '../types';
 interface MeetingNotesPageProps {
   meetingNotes: MeetingNote[];
   onNoteClick: (noteId: string) => void;
-  onUpload: (title: string, content: string) => void;
+  onUpload: (title: string, content: string) => Promise<void>;
 }
 
 export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: MeetingNotesPageProps) {
@@ -20,6 +20,7 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const getStatusConfig = (status: MeetingNote['status']) => {
     const configs = {
@@ -37,12 +38,20 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
     note.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleUpload = () => {
-    if (newTitle.trim() && newContent.trim()) {
-      onUpload(newTitle, newContent);
-      setNewTitle('');
-      setNewContent('');
-      setIsUploadOpen(false);
+  const handleUpload = async () => {
+    if (newTitle.trim() && newContent.trim() && !isUploading) {
+      setIsUploading(true);
+      try {
+        await onUpload(newTitle, newContent);
+        setNewTitle('');
+        setNewContent('');
+        setIsUploadOpen(false);
+      } catch (error) {
+        // 에러는 App.tsx에서 toast로 표시됨
+        console.error('Upload error:', error);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -90,11 +99,18 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsUploadOpen(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsUploadOpen(false)}
+                  disabled={isUploading}
+                >
                   취소
                 </Button>
-                <Button onClick={handleUpload} disabled={!newTitle.trim() || !newContent.trim()}>
-                  업로드 및 분석 시작
+                <Button 
+                  onClick={handleUpload} 
+                  disabled={!newTitle.trim() || !newContent.trim() || isUploading}
+                >
+                  {isUploading ? '업로드 중...' : '업로드 및 분석 시작'}
                 </Button>
               </div>
             </div>

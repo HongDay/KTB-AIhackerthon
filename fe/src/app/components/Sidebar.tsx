@@ -89,8 +89,8 @@ export function Sidebar({ currentPage, onPageChange, unassignedCount = 0, failed
   return (
     <aside className="w-64 border-r bg-muted/30 flex flex-col">
       <div className="p-6 border-b">
-        <h1 className="font-semibold">팀프로젝트 관리</h1>
-        <p className="text-muted-foreground text-sm mt-1">온보딩 & 업무분담</p>
+        <h1 className="font-semibold">모하조</h1>
+        <p className="text-muted-foreground text-sm mt-1">협업의 첫 단계를 설계하는 에이전트</p>
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
