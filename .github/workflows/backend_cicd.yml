@@ -93,5 +93,5 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
             docker stop aihkt-be || true
             docker rm aihkt-be || true
-            docker run -d --name aihkt-be -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
+            docker run -d --name aihkt-be -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod ${{ secrets.DOCKER_USERNAME }}/aihkt-be:latest
           EOF
