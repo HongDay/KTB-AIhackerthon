@@ -28,7 +28,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/aihkt-ai:latest
 
   deploy:
-    needs: build-and-push
+    needs: build_and_push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
