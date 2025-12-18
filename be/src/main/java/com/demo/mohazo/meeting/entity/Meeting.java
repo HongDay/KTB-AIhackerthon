@@ -1,6 +1,5 @@
 package com.demo.mohazo.meeting.entity;
 
-import com.demo.mohazo.team.entity.Team;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,12 +22,8 @@ public class Meeting {
     @Column(name="record", nullable = false, length = 10000)
     private String record; // 회의록(최대 10000자)
 
-    @Column(name="script", length = 2000)
+    @Column(name="script", nullable = false, length = 2000)
     private String script; // AI-generated 프로젝트 설명
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name="team_id", nullable = false)
-    private Team team;
 
     @Column(name="notion_page_url_desc", length = 200)
     private String notionPageUrlDesc;

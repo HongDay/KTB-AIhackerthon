@@ -2,11 +2,9 @@ package com.demo.mohazo.tasklist.entity;
 
 import com.demo.mohazo.common.domain.Status;
 import com.demo.mohazo.meeting.entity.Meeting;
-import com.demo.mohazo.user.entity.User;
+import com.demo.mohazo.works.entity.Works;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -25,30 +23,20 @@ public class TaskList {
     @JoinColumn(name="meeting_id", nullable = false)
     private Meeting meeting;
 
-    @Column(name="task_descript", nullable = false)
-    private String taskDescript; // ERD에 Type만 보여서 길이 제한은 DB 정의에 맞춰 조정 권장
+    @Column(name="title", nullable = false, length = 30)
+    private String title;
 
-    // assignee: ERD상 LONG, "이 업무를 할당받은 사람"
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="assignee")
-    private User assignee;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name="works_id", nullable = true)
+    private Works works;
 
-    @Column(name="deadline")
-    private LocalDateTime deadline;
-
-    @Column(name="work_group")
-    private Integer workGroup;
-
-    @Column(name="work_order")
-    private Integer workOrder;
+    @Column(name="work_order", nullable = false)
+    private Integer taskOrder;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="status", nullable = false, length = 20)
-    private Status status;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="pre-requisite")
-    private TaskList preRequisite;
+    @Column(name="status", nullable = false, length = 10)
+    @Builder.Default
+    private Status status = Status.BEFORE;
 
     @Column(name="notion_task_id", length = 200)
     private String notionTaskId;
