@@ -124,7 +124,7 @@ export function MeetingNotesPage({ meetingNotes, onNoteClick, onUpload }: Meetin
                 <label className="text-sm font-medium">회의 내용</label>
                 <Textarea
                   placeholder="회의록 내용을 붙여넣거나 입력하세요..."
-                  className="min-h-[300px]"
+                  className="min-h-[300px] max-h-[400px] overflow-y-auto resize-none"
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   disabled={isUploading}
