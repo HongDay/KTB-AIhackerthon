@@ -31,6 +31,7 @@ public class TaskBoardController {
     public final TaskListNotionService taskListNotionService;
     public final MeetingRepository meetingRepository;
     public final TeamRepository teamRepository;
+    public final WorksService worksService;
 
 
 
@@ -41,13 +42,10 @@ public class TaskBoardController {
 
         List<TaskList> tasks = taskListNotionService.findbymeetingid(meetingid);
 
-        List<Works> worksList = tasks.stream()
-                .map(TaskList::getWorks)     // Task에서 WorkGroup 추출
-                .filter(Objects::nonNull)    // 워크그룹이 없는 태스크 제외
-                .distinct()                  // 중복 제거 (공통된 것들만 남음)
-                .collect(Collectors.toList());
 
-//        worksList = mohajoAlgorithm.Classfication(worksList);
+        worksService.assignworks();
+
+
         Meeting meeting = meetingRepository.findById(meetingid).orElse(null);
 
 
@@ -55,7 +53,6 @@ public class TaskBoardController {
 
         //TaskListService.createTable -> notion_database_id in meeting
         taskListNotionService.createNotionDB(team, meeting);
-
         //TaskListService.insertPages 안에서 TaskList에  notion_task_id 할당
         taskListNotionService.insertPages(tasks, meeting, team);
 
